@@ -6,13 +6,16 @@ import { App } from "obsidian";
 import type LifePanelPlugin from "../main";
 import { BaseModule } from "./BaseModule";
 import { bus } from "../core/EventBus";
-import { nowHM } from "../core/DateUtils";
+import { nowHM, today } from "../core/DateUtils";
 
 export class InspirationModule extends BaseModule {
   async render() {
     const c = this.container;
     c.empty();
     c.addClass("lp-inspiration");
+
+    // 每日灵感固定为当天，不随日历选择变化
+    const date = today();
 
     // 输入框
     const inputContainer = c.createDiv({ cls: "lp-insp-input-container" });
@@ -29,10 +32,10 @@ export class InspirationModule extends BaseModule {
     const addInspiration = async () => {
       const text = input.value.trim();
       if (!text) return;
-      await this.plugin.store.addInspiration(this.currentDate, text, nowHM());
+      await this.plugin.store.addInspiration(date, text, nowHM());
       input.value = "";
       this.render();
-      bus.emit({ type: "data-updated", scope: "day", date: this.currentDate });
+      bus.emit({ type: "data-updated", scope: "day", date });
     };
 
     addBtn.addEventListener("click", addInspiration);
@@ -43,7 +46,7 @@ export class InspirationModule extends BaseModule {
     });
 
     // 灵感列表
-    const inspirations = await this.plugin.store.getInspirations(this.currentDate);
+    const inspirations = await this.plugin.store.getInspirations(date);
     const list = c.createDiv({ cls: "lp-insp-list" });
 
     if (inspirations.length === 0) {

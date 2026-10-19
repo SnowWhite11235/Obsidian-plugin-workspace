@@ -5,6 +5,7 @@
 import { App, Notice } from "obsidian";
 import type LifePanelPlugin from "../main";
 import { BaseModule } from "./BaseModule";
+import { today } from "../core/DateUtils";
 
 export class ReviewModule extends BaseModule {
   async render() {
@@ -12,8 +13,11 @@ export class ReviewModule extends BaseModule {
     c.empty();
     c.addClass("lp-review");
 
+    // 每日复盘固定为当天，不随日历选择变化
+    const date = today();
+
     const questions = this.plugin.settings.reviewQuestions;
-    const answers = await this.plugin.store.getReview(this.currentDate);
+    const answers = await this.plugin.store.getReview(date);
 
     for (const q of questions) {
       const qContainer = c.createDiv({ cls: "lp-review-question" });
@@ -28,9 +32,9 @@ export class ReviewModule extends BaseModule {
       textarea.rows = 3;
       textarea.value = answers[q] || "";
       textarea.addEventListener("blur", async () => {
-        const currentAnswers = await this.plugin.store.getReview(this.currentDate);
+        const currentAnswers = await this.plugin.store.getReview(date);
         currentAnswers[q] = textarea.value;
-        await this.plugin.store.saveReview(this.currentDate, currentAnswers);
+        await this.plugin.store.saveReview(date, currentAnswers);
       });
     }
   }
