@@ -91,6 +91,7 @@ export class PanelView extends ItemView {
   }
 
   private render() {
+    console.log("[PanelView] render() START, order:", this.order);
     const container = this.contentEl;
     container.empty();
     container.addClass("life-panel-container");
@@ -170,6 +171,7 @@ export class PanelView extends ItemView {
 
   /** 根据 moduleId 渲染对应模块 */
   private renderModuleById(moduleId: string, body: HTMLElement) {
+    console.log("[PanelView] renderModuleById:", moduleId);
     body.empty();
     switch (moduleId) {
       case "calendar":
