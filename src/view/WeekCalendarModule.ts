@@ -243,19 +243,13 @@ export class WeekCalendarModule extends BaseModule {
       item.createEl("span", { text: "⭐", cls: "lp-week-cal-task-important" });
     }
 
-    // 截止日 + 时间（同一行）
-    const metaWrap = item.createEl("span", { cls: "lp-week-cal-task-meta" });
-    if (task.dueDate) {
-      metaWrap.createEl("span", {
-        text: `📅 ${task.dueDate}`,
-        cls: "lp-week-cal-task-due",
-      });
-    }
-    if (task.time) {
-      metaWrap.createEl("span", {
-        text: `⏰ ${task.time}`,
-        cls: "lp-week-cal-task-time",
-      });
+    // 截止日 + 时间（合并到同一行）
+    if (task.dueDate || task.time) {
+      const metaWrap = item.createEl("span", { cls: "lp-week-cal-task-meta" });
+      const parts: string[] = [];
+      if (task.dueDate) parts.push(`📅 ${task.dueDate}`);
+      if (task.time) parts.push(`⏰ ${task.time}`);
+      metaWrap.setText(parts.join(" "));
     }
 
     // 任务描述（点击可编辑）
