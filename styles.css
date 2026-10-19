@@ -1566,7 +1566,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 120px;
+  max-width: 260px;
 }
 
 .lp-week-cal-task-done .lp-week-cal-task-text {
