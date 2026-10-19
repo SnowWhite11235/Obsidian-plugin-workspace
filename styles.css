@@ -41,6 +41,25 @@
   background: var(--interactive-hover);
 }
 
+.life-panel-header-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.life-panel-refresh-btn {
+  padding: 4px 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--interactive-normal);
+  color: var(--text-normal);
+  cursor: pointer;
+  font-size: 14px;
+}
+.life-panel-refresh-btn:hover {
+  background: var(--interactive-hover);
+}
+
 /* ========== 模块通用 ========== */
 .life-panel-modules {
   display: flex;

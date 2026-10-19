@@ -101,12 +101,21 @@ export class PanelView extends ItemView {
       cls: "life-panel-date-label",
       text: this.formatDateLabel(this.currentDate),
     });
-    const todayBtn = header.createEl("button", {
+    const headerActions = header.createDiv({ cls: "life-panel-header-actions" });
+    const todayBtn = headerActions.createEl("button", {
       cls: "life-panel-today-btn",
       text: "今天",
     });
     todayBtn.addEventListener("click", () => {
       bus.emit({ type: "date-changed", date: today() });
+    });
+    const refreshBtn = headerActions.createEl("button", {
+      cls: "life-panel-refresh-btn",
+      text: "⟳",
+      attr: { title: "刷新" },
+    });
+    refreshBtn.addEventListener("click", () => {
+      this.render();
     });
 
     // 获取模块顺序
