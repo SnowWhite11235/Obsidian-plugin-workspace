@@ -80,6 +80,12 @@ export class WeekCalendarModule extends BaseModule {
     const scanStart = addDays(this.weekStartDate, -30);
     const scanEnd = addDays(this.weekStartDate, 6);
     const allTasks = await this.plugin.store.getTasksInRange(scanStart, scanEnd);
+    console.log("[WeekCal] scanRange", toISODate(scanStart), "~", toISODate(scanEnd));
+    console.log("[WeekCal] allTasks", allTasks.map((t) => ({
+      desc: t.task.description,
+      due: t.task.dueDate,
+      src: t.sourceDate,
+    })));
 
     // 按显示日期分组：有 dueDate 的按 dueDate，否则按 sourceDate
     const tasksByDate = new Map<string, ParsedTask[]>();
@@ -90,6 +96,7 @@ export class WeekCalendarModule extends BaseModule {
       tasksByDate.get(displayDate)!.push(item.task);
       sourceDateMap.set(item.task, item.sourceDate);
     }
+    console.log("[WeekCal] tasksByDate", Array.from(tasksByDate.entries()).map(([k, v]) => [k, v.length]));
 
     for (let i = 0; i < 7; i++) {
       const day = addDays(this.weekStartDate, i);
