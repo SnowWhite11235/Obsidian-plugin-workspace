@@ -37,6 +37,7 @@ export class WeekCalendarModule extends BaseModule {
   }
 
   async render() {
+    console.log("[WeekCal] render() START");
     const c = this.container;
     c.empty();
     c.addClass("lp-week-cal");
@@ -103,7 +104,6 @@ export class WeekCalendarModule extends BaseModule {
       const iso = toISODate(day);
       const isToday = iso === todayStr;
 
-      // 只显示今天模式：跳过非今天的行
       if (this.showTodayOnly && !isToday) continue;
 
       const isSelected = iso === this.selectedDate;
@@ -112,7 +112,6 @@ export class WeekCalendarModule extends BaseModule {
         cls: `lp-week-cal-row ${isToday ? "lp-week-cal-row-today" : ""} ${isSelected ? "lp-week-cal-row-selected" : ""}`,
       });
 
-      // 日期栏（左侧）
       const dateCol = row.createDiv({ cls: "lp-week-cal-date-col" });
       dateCol.createEl("div", {
         text: WEEK_DAYS_ZH[i],
@@ -128,15 +127,12 @@ export class WeekCalendarModule extends BaseModule {
         this.render();
       });
 
-      // 内容区：两栏布局
       const contentCol = row.createDiv({ cls: "lp-week-cal-content-col" });
 
-      // 中栏：任务
       const taskCol = contentCol.createDiv({ cls: "lp-week-cal-task-col" });
       const dayTasks = tasksByDate.get(iso) || [];
       await this.renderDayTasks(taskCol, iso, dayTasks, sourceDateMap);
 
-      // 右栏：打卡
       const habitCol = contentCol.createDiv({ cls: "lp-week-cal-habit-col" });
       await this.renderDayHabits(habitCol, iso);
     }
