@@ -235,20 +235,27 @@ export class WeekCalendarModule extends BaseModule {
       bus.emit({ type: "data-updated", scope: "day", date: src });
     });
 
-    // 时间
-    if (task.time) {
-      item.createEl("span", {
-        text: task.time,
-        cls: "lp-week-cal-task-time",
-      });
-    }
-
     // 紧急/重要标记
     if (task.urgent) {
       item.createEl("span", { text: "❗", cls: "lp-week-cal-task-urgent" });
     }
     if (task.important) {
       item.createEl("span", { text: "⭐", cls: "lp-week-cal-task-important" });
+    }
+
+    // 截止日 + 时间（同一行）
+    const metaWrap = item.createEl("span", { cls: "lp-week-cal-task-meta" });
+    if (task.dueDate) {
+      metaWrap.createEl("span", {
+        text: `📅 ${task.dueDate}`,
+        cls: "lp-week-cal-task-due",
+      });
+    }
+    if (task.time) {
+      metaWrap.createEl("span", {
+        text: `⏰ ${task.time}`,
+        cls: "lp-week-cal-task-time",
+      });
     }
 
     // 任务描述（点击可编辑）

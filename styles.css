@@ -1565,7 +1565,23 @@
   color: var(--interactive-accent);
 }
 
+.lp-week-cal-task-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
 .lp-week-cal-task-time {
+  font-size: 10px;
+  color: var(--text-muted);
+  background: var(--background-modifier-hover);
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-family: var(--font-monospace);
+}
+
+.lp-week-cal-task-due {
   font-size: 10px;
   color: var(--text-muted);
   background: var(--background-modifier-hover);
