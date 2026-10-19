@@ -210,6 +210,36 @@ focusMinutes: 0
     return parseTasksFromText(sectionContent);
   }
 
+  /** 安全读取某日任务（不创建文件） */
+  async getTasksSafe(date: Date | string): Promise<ParsedTask[]> {
+    const d = typeof date === "string" ? fromISODate(date) : date;
+    const path = this.getDailyNotePath(d);
+    const file = this.app.vault.getAbstractFileByPath(path);
+    if (!(file instanceof TFile)) return [];
+    const content = await this.app.vault.read(file);
+    const sectionContent = this.extractSection(content, SECTION_TASKS);
+    if (!sectionContent) return [];
+    return parseTasksFromText(sectionContent);
+  }
+
+  /** 扫描日期范围内所有 daily note 的任务，附带 sourceDate */
+  async getTasksInRange(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<Array<{ task: ParsedTask; sourceDate: string }>> {
+    const results: Array<{ task: ParsedTask; sourceDate: string }> = [];
+    let current = new Date(startDate);
+    while (current <= endDate) {
+      const sourceDate = toISODate(current);
+      const tasks = await this.getTasksSafe(current);
+      for (const task of tasks) {
+        results.push({ task, sourceDate });
+      }
+      current = addDays(current, 1);
+    }
+    return results;
+  }
+
   /** 添加任务到某日的任务区 */
   async addTask(
     date: Date | string,

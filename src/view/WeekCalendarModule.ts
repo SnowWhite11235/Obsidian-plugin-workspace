@@ -76,6 +76,21 @@ export class WeekCalendarModule extends BaseModule {
     const list = c.createDiv({ cls: "lp-week-cal-list" });
     const todayStr = today();
 
+    // 扫描范围：周开始前 30 天到周末，确保能找到提前创建但截止日在本周的任务
+    const scanStart = addDays(this.weekStartDate, -30);
+    const scanEnd = addDays(this.weekStartDate, 6);
+    const allTasks = await this.plugin.store.getTasksInRange(scanStart, scanEnd);
+
+    // 按显示日期分组：有 dueDate 的按 dueDate，否则按 sourceDate
+    const tasksByDate = new Map<string, ParsedTask[]>();
+    const sourceDateMap = new Map<ParsedTask, string>();
+    for (const item of allTasks) {
+      const displayDate = item.task.dueDate || item.sourceDate;
+      if (!tasksByDate.has(displayDate)) tasksByDate.set(displayDate, []);
+      tasksByDate.get(displayDate)!.push(item.task);
+      sourceDateMap.set(item.task, item.sourceDate);
+    }
+
     for (let i = 0; i < 7; i++) {
       const day = addDays(this.weekStartDate, i);
       const iso = toISODate(day);
@@ -111,7 +126,8 @@ export class WeekCalendarModule extends BaseModule {
 
       // 中栏：任务
       const taskCol = contentCol.createDiv({ cls: "lp-week-cal-task-col" });
-      await this.renderDayTasks(taskCol, iso);
+      const dayTasks = tasksByDate.get(iso) || [];
+      await this.renderDayTasks(taskCol, iso, dayTasks, sourceDateMap);
 
       // 右栏：打卡
       const habitCol = contentCol.createDiv({ cls: "lp-week-cal-habit-col" });
@@ -120,10 +136,12 @@ export class WeekCalendarModule extends BaseModule {
   }
 
   /** 渲染某天的任务列表 */
-  private async renderDayTasks(container: HTMLElement, dateStr: string) {
-    const tasks = await this.plugin.store.getTasks(dateStr);
-
-    // 顶部：完成统计 + 添加按钮
+  private async renderDayTasks(
+    container: HTMLElement,
+    dateStr: string,
+    tasks: ParsedTask[],
+    sourceDateMap: Map<ParsedTask, string>,
+  ) {
     const header = container.createDiv({ cls: "lp-week-cal-task-header" });
     const doneCount = tasks.filter((t) => t.checked).length;
     header.createEl("span", {
@@ -144,7 +162,6 @@ export class WeekCalendarModule extends BaseModule {
         cls: "lp-week-cal-empty",
         text: "暂无任务",
       });
-      // 点击空白处也可以添加任务
       empty.addEventListener("click", () => {
         this.openAddTaskModal(dateStr);
       });
@@ -166,7 +183,7 @@ export class WeekCalendarModule extends BaseModule {
     });
     const showTasks = sortedTasks.slice(0, 5);
     for (const task of showTasks) {
-      this.renderTaskItem(taskList, task, dateStr);
+      this.renderTaskItem(taskList, task, dateStr, sourceDateMap);
     }
     if (tasks.length > 5) {
       taskList.createDiv({
@@ -177,14 +194,18 @@ export class WeekCalendarModule extends BaseModule {
 
     // 点击任务列表空白处打开当天任务编辑器
     taskList.addEventListener("click", (e) => {
-      // 如果点击的是任务项内部（复选框、编辑按钮等），不触发
       if ((e.target as HTMLElement).closest(".lp-week-cal-task-item")) return;
       this.openEditDayTasksModal(dateStr);
     });
   }
 
   /** 渲染单个任务项 */
-  private renderTaskItem(container: HTMLElement, task: ParsedTask, dateStr: string) {
+  private renderTaskItem(
+    container: HTMLElement,
+    task: ParsedTask,
+    dateStr: string,
+    sourceDateMap: Map<ParsedTask, string>,
+  ) {
     const color = task.taskType ? this.getTaskColor(task.taskType) : "#8f9192";
     const item = container.createDiv({
       cls: `lp-week-cal-task-item ${task.checked ? "lp-week-cal-task-done" : ""}`,
@@ -211,10 +232,11 @@ export class WeekCalendarModule extends BaseModule {
         item.removeClass("lp-week-cal-task-done");
         checkbox.textContent = "○";
       }
-      // 写入文件
-      await this.plugin.store.toggleTask(dateStr, task.lineIndex);
+      // 写入文件（用 sourceDate 定位 daily note）
+      const src = sourceDateMap.get(task) || dateStr;
+      await this.plugin.store.toggleTask(src, task.lineIndex);
       this.render();
-      bus.emit({ type: "data-updated", scope: "day", date: dateStr });
+      bus.emit({ type: "data-updated", scope: "day", date: src });
     });
 
     // 时间
@@ -240,7 +262,7 @@ export class WeekCalendarModule extends BaseModule {
     });
     descEl.addEventListener("click", (e) => {
       e.stopPropagation();
-      this.openEditTaskModal(task, dateStr);
+      this.openEditTaskModal(task, dateStr, sourceDateMap);
     });
 
     // 类型标签
@@ -628,9 +650,14 @@ export class WeekCalendarModule extends BaseModule {
   }
 
   /** 打开编辑单个任务的弹窗 */
-  private openEditTaskModal(task: ParsedTask, dateStr: string) {
+  private openEditTaskModal(
+    task: ParsedTask,
+    dateStr: string,
+    sourceDateMap: Map<ParsedTask, string>,
+  ) {
     const modal = new Modal(this.app);
-    modal.titleEl.setText(`编辑任务 - ${dateStr}`);
+    const src = sourceDateMap.get(task) || dateStr;
+    modal.titleEl.setText(`编辑任务 - ${src}`);
 
     const form = modal.contentEl.createDiv({ cls: "lp-task-form" });
 
@@ -731,7 +758,7 @@ export class WeekCalendarModule extends BaseModule {
         tags.push(typeTag);
       }
 
-      await this.plugin.store.updateTask(dateStr, task.lineIndex, {
+      await this.plugin.store.updateTask(src, task.lineIndex, {
         description: desc,
         priority: prioritySelect.value as Priority,
         tags,
@@ -744,17 +771,17 @@ export class WeekCalendarModule extends BaseModule {
       new Notice("任务已更新");
       modal.close();
       this.render();
-      bus.emit({ type: "data-updated", scope: "day", date: dateStr });
+      bus.emit({ type: "data-updated", scope: "day", date: src });
     };
 
     saveBtn.addEventListener("click", save);
     cancelBtn.addEventListener("click", () => modal.close());
     delBtn.addEventListener("click", async () => {
-      await this.plugin.store.deleteTask(dateStr, task.lineIndex);
+      await this.plugin.store.deleteTask(src, task.lineIndex);
       new Notice("任务已删除");
       modal.close();
       this.render();
-      bus.emit({ type: "data-updated", scope: "day", date: dateStr });
+      bus.emit({ type: "data-updated", scope: "day", date: src });
     });
     descInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") save();
