@@ -1,0 +1,1955 @@
+/*
+=== obsidian-life-panel 样式 ===
+生活管理面板
+*/
+
+/* ========== 容器 ========== */
+.life-panel-container {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.life-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 8px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.life-panel-date-label {
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.life-panel-today-btn {
+  padding: 4px 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--interactive-normal);
+  color: var(--text-normal);
+  cursor: pointer;
+  font-size: 12px;
+}
+.life-panel-today-btn:hover {
+  background: var(--interactive-hover);
+}
+
+/* ========== 模块通用 ========== */
+.life-panel-modules {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.life-panel-section {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--background-primary);
+  transition: border-color 0.15s, opacity 0.15s;
+}
+
+.life-panel-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--background-secondary);
+  cursor: pointer;
+  user-select: none;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.life-panel-section-header:hover {
+  background: var(--background-modifier-hover);
+}
+
+.life-panel-section-title {
+  color: var(--text-normal);
+  flex: 1;
+}
+
+.life-panel-drag-handle {
+  cursor: grab;
+  color: var(--text-muted);
+  font-size: 16px;
+  line-height: 1;
+  padding: 0 2px;
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
+
+.life-panel-drag-handle:hover {
+  opacity: 1;
+}
+
+.life-panel-drag-handle:active {
+  cursor: grabbing;
+}
+
+.life-panel-collapse-icon {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.life-panel-section-body {
+  padding: 10px 12px;
+}
+
+/* 拖拽中：半透明 */
+.life-panel-section-dragging {
+  opacity: 0.4;
+}
+
+/* 拖拽悬停目标：虚线高亮边框 */
+.life-panel-section-drag-over {
+  border-color: var(--interactive-accent);
+  border-style: dashed;
+  border-width: 2px;
+}
+
+/* ========== 月日历 ========== */
+.lp-calendar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lp-calendar-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lp-cal-nav-btn {
+  background: var(--interactive-normal);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 4px 10px;
+  cursor: pointer;
+  color: var(--text-normal);
+  font-size: 16px;
+}
+.lp-cal-nav-btn:hover {
+  background: var(--interactive-hover);
+}
+
+.lp-calendar-title {
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.lp-calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.lp-cal-weekday {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 2px 0;
+}
+
+.lp-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.lp-cal-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-normal);
+  position: relative;
+  padding: 2px;
+}
+
+.lp-cal-day:hover {
+  background: var(--background-modifier-hover);
+}
+
+.lp-cal-day-out {
+  opacity: 0.3;
+}
+
+.lp-cal-day-today {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.lp-cal-day-selected {
+  outline: 2px solid var(--interactive-accent);
+}
+
+.lp-cal-day-num {
+  font-weight: 500;
+}
+
+.lp-cal-dots {
+  display: flex;
+  gap: 2px;
+  margin-top: 2px;
+  height: 4px;
+}
+
+.lp-cal-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+}
+
+.lp-cal-dot-task { background: #5e81ac; }
+.lp-cal-dot-inspiration { background: #d08770; }
+.lp-cal-dot-habit { background: #a3be8c; }
+
+/* ========== 当日任务 ========== */
+.lp-tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lp-task-input-container {
+  display: flex;
+  gap: 6px;
+}
+
+.lp-task-input {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 13px;
+}
+
+.lp-task-priority-select {
+  padding: 6px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 12px;
+}
+
+.lp-task-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.lp-task-tags {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.lp-task-tag-btn {
+  padding: 2px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 12px;
+  background: var(--interactive-normal);
+  color: var(--text-normal);
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.lp-task-tag-btn.active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
+}
+
+.lp-task-sort-btn {
+  padding: 2px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--interactive-normal);
+  color: var(--text-normal);
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.lp-task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.lp-task-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: var(--background-primary);
+  transition: all 0.15s;
+}
+
+.lp-task-item:hover {
+  background: var(--background-modifier-hover);
+}
+
+.lp-task-item.lp-task-dragging {
+  opacity: 0.5;
+}
+
+.lp-task-item.lp-task-drag-over {
+  border-color: var(--interactive-accent);
+  border-style: dashed;
+}
+
+.lp-task-checkbox {
+  margin: 0;
+  cursor: pointer;
+}
+
+.lp-task-priority {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.lp-prio-highest { background: #bf616a; color: white; }
+.lp-prio-high { background: #d08770; color: white; }
+.lp-prio-medium { background: #ebcb8b; color: #2e3440; }
+.lp-prio-low { background: #a3be8c; color: white; }
+
+.lp-task-desc {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-normal);
+}
+
+.lp-task-done .lp-task-desc {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.lp-task-tags-inline {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.lp-task-tag-inline {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: var(--background-modifier-hover);
+  color: var(--text-muted);
+}
+
+.lp-task-due {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.lp-task-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.lp-task-item:hover .lp-task-actions {
+  opacity: 1;
+}
+
+.lp-task-action-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 4px;
+}
+
+/* ========== 每日打卡 ========== */
+.lp-habits {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lp-habit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 6px;
+}
+
+.lp-habit-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-primary);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+
+.lp-habit-card:hover {
+  background: var(--background-modifier-hover);
+}
+
+.lp-habit-card.lp-habit-done {
+  background: rgba(163, 190, 140, 0.2);
+  border-color: #a3be8c;
+}
+
+.lp-habit-icon {
+  font-size: 20px;
+}
+
+.lp-habit-name {
+  font-size: 11px;
+  color: var(--text-normal);
+}
+
+.lp-habit-streak {
+  font-size: 10px;
+  color: #d08770;
+  font-weight: 600;
+}
+
+/* ========== 每日灵感 ========== */
+.lp-inspiration {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lp-insp-input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lp-insp-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 13px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.lp-insp-add-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  cursor: pointer;
+  font-size: 12px;
+  align-self: flex-end;
+}
+
+.lp-insp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.lp-insp-item {
+  display: flex;
+  gap: 8px;
+  padding: 6px 8px;
+  border-left: 3px solid #d08770;
+  background: var(--background-secondary);
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.lp-insp-time {
+  color: var(--text-muted);
+  font-weight: 600;
+  flex-shrink: 0;
+  font-family: var(--font-monospace);
+}
+
+.lp-insp-text {
+  color: var(--text-normal);
+  flex: 1;
+}
+
+/* ========== 每日复盘 ========== */
+.lp-review {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lp-review-question {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lp-review-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.lp-review-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 13px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+/* ========== 番茄钟 ========== */
+.lp-pomodoro {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.lp-pomo-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: var(--background-secondary);
+}
+
+.lp-pomo-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: var(--background-secondary);
+}
+
+.lp-pomo-task-selector {
+  width: 100%;
+}
+
+.lp-pomo-task-select {
+  width: 100%;
+  padding: 4px 6px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 11px;
+}
+
+.lp-pomo-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.lp-pomo-time {
+  font-size: 28px;
+  font-weight: 700;
+  font-family: var(--font-monospace);
+  color: var(--interactive-accent);
+  letter-spacing: 2px;
+}
+
+.lp-pomo-state {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.lp-pomo-current-task {
+  font-size: 11px;
+  color: var(--text-normal);
+  margin-top: 2px;
+}
+
+.lp-pomo-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.lp-pomo-btn {
+  padding: 4px 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--interactive-normal);
+  color: var(--text-normal);
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.lp-pomo-btn:hover {
+  background: var(--interactive-hover);
+}
+
+.lp-pomo-start {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.lp-pomo-stats {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.lp-pomo-focus-title {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.lp-pomo-focus-content {
+  font-size: 12px;
+  color: var(--text-normal);
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.lp-pomo-focus-empty {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ========== 周任务管理 ========== */
+.lp-weekly {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lp-weekly-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lp-weekly-nav-btn {
+  background: var(--interactive-normal);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 4px 10px;
+  cursor: pointer;
+  color: var(--text-normal);
+  font-size: 16px;
+}
+
+.lp-weekly-title {
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.lp-weekly-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.lp-weekly-th {
+  padding: 4px 2px;
+  text-align: center;
+  border-bottom: 1px solid var(--background-modifier-border);
+  color: var(--text-muted);
+}
+
+.lp-weekly-cat-cell {
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  white-space: nowrap;
+}
+
+.lp-weekly-cell {
+  padding: 4px;
+  text-align: center;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.lp-weekly-checkbox {
+  margin: 0;
+  cursor: pointer;
+}
+
+.lp-weekly-review {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.lp-weekly-review-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 12px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.lp-weekly-save-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  cursor: pointer;
+  font-size: 12px;
+  align-self: flex-start;
+}
+
+/* ========== 统计看板（简约） ========== */
+.lp-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.lp-stat-card {
+  padding: 8px 6px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: var(--background-secondary);
+  text-align: center;
+}
+
+.lp-stat-title {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.lp-stat-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+/* ========== 最近文件 ========== */
+.lp-recent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lp-recent-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.lp-recent-tab {
+  flex: 1;
+  padding: 4px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--interactive-normal);
+  color: var(--text-normal);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.lp-recent-tab.active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.lp-recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.lp-recent-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.15s;
+}
+
+.lp-recent-item:hover {
+  background: var(--background-modifier-hover);
+}
+
+.lp-recent-icon {
+  font-size: 14px;
+}
+
+.lp-recent-name {
+  flex: 1;
+  color: var(--text-normal);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lp-recent-time {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+/* ========== 弹窗 ========== */
+.lp-modal-input {
+  display: block;
+  width: 100%;
+  padding: 6px 8px;
+  margin-bottom: 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.lp-modal-save-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+/* ========== 空状态 ========== */
+.lp-empty-state {
+  padding: 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* ========== 快捷打卡列表 ========== */
+.lp-habit-quick-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lp-habit-quick-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.15s;
+}
+
+.lp-habit-quick-item:hover {
+  background: var(--background-modifier-hover);
+}
+
+/* ========== 滚动条 ========== */
+.life-panel-container::-webkit-scrollbar,
+.lp-task-list::-webkit-scrollbar,
+.lp-insp-list::-webkit-scrollbar,
+.lp-recent-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.life-panel-container::-webkit-scrollbar-thumb,
+.lp-task-list::-webkit-scrollbar-thumb,
+.lp-insp-list::-webkit-scrollbar-thumb,
+.lp-recent-list::-webkit-scrollbar-thumb {
+  background: var(--background-modifier-border);
+  border-radius: 3px;
+}
+
+.life-panel-container::-webkit-scrollbar-thumb:hover,
+.lp-task-list::-webkit-scrollbar-thumb:hover,
+.lp-insp-list::-webkit-scrollbar-thumb:hover,
+.lp-recent-list::-webkit-scrollbar-thumb:hover {
+  background: var(--interactive-accent);
+}
+
+/* ========== 紧凑月日历 ========== */
+.lp-calendar-compact {
+  padding: 4px;
+}
+
+.lp-calendar-compact .lp-cal-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.lp-calendar-compact .lp-cal-th {
+  text-align: center;
+  font-size: 10px;
+  color: var(--text-muted);
+  padding: 2px 0;
+  font-weight: 500;
+}
+
+.lp-calendar-compact .lp-cal-td {
+  text-align: center;
+  padding: 2px 0;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--text-normal);
+  position: relative;
+  height: 24px;
+  vertical-align: middle;
+}
+
+.lp-calendar-compact .lp-cal-day-num {
+  font-weight: 500;
+  display: block;
+}
+
+.lp-calendar-compact .lp-cal-dots {
+  display: flex;
+  justify-content: center;
+  gap: 1px;
+  margin-top: 1px;
+  height: 3px;
+}
+
+.lp-calendar-compact .lp-cal-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+}
+
+.lp-calendar-compact .lp-cal-day-out {
+  opacity: 0.3;
+}
+
+.lp-calendar-compact .lp-cal-day-today {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.lp-calendar-compact .lp-cal-day-selected {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: -2px;
+}
+
+.lp-cal-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.lp-cal-nav-btn {
+  background: var(--interactive-normal);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  cursor: pointer;
+  color: var(--text-normal);
+  font-size: 14px;
+}
+
+.lp-cal-nav-btn:hover {
+  background: var(--interactive-hover);
+}
+
+.lp-cal-title {
+  font-weight: 600;
+  color: var(--text-normal);
+  font-size: 13px;
+}
+
+/* ========== 周日历 ========== */
+.lp-week-cal {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lp-week-cal-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.lp-week-cal-nav-btn {
+  background: var(--interactive-normal);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  cursor: pointer;
+  color: var(--text-normal);
+  font-size: 14px;
+}
+
+.lp-week-cal-nav-btn:hover {
+  background: var(--interactive-hover);
+}
+
+.lp-week-cal-today-btn {
+  background: var(--interactive-normal);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 2px 10px;
+  cursor: pointer;
+  color: var(--text-normal);
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+.lp-week-cal-today-btn:hover {
+  background: var(--interactive-hover);
+}
+
+.lp-week-cal-today-btn-active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
+}
+
+.lp-week-cal-title {
+  font-weight: 600;
+  color: var(--text-normal);
+  font-size: 12px;
+}
+
+.lp-week-cal-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lp-week-cal-day {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  cursor: pointer;
+  background: var(--background-primary);
+  transition: background 0.15s;
+}
+
+.lp-week-cal-day:hover {
+  background: var(--background-modifier-hover);
+}
+
+.lp-week-cal-day-today {
+  border-color: var(--interactive-accent);
+  border-width: 2px;
+}
+
+.lp-week-cal-day-selected {
+  background: var(--background-secondary-alt);
+}
+
+.lp-week-cal-day-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.lp-week-cal-day-name {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--text-normal);
+}
+
+.lp-week-cal-day-date {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.lp-week-cal-summary {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 2px;
+}
+
+.lp-week-cal-count {
+  font-size: 10px;
+  color: var(--text-muted);
+  background: var(--background-modifier-hover);
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+
+.lp-week-cal-tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lp-week-cal-empty {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.lp-week-cal-task {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-normal);
+}
+
+.lp-week-cal-checkbox {
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.lp-week-cal-task-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 180px;
+}
+
+.lp-week-cal-task-done .lp-week-cal-task-text {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+.lp-week-cal-more {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ========== 任务模板 ========== */
+.lp-task-templates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.lp-task-templates-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-right: 4px;
+}
+
+.lp-task-template-btn {
+  padding: 2px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 12px;
+  background: var(--interactive-normal);
+  color: var(--text-normal);
+  cursor: pointer;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.lp-task-template-btn:hover {
+  background: var(--interactive-hover);
+}
+
+/* ========== 设置面板 ========== */
+.lp-setting-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 4px 0 8px 0;
+}
+
+.lp-templates-container {
+  margin-bottom: 8px;
+}
+
+/* ========== 双月份并排日历 ========== */
+.lp-cal-months {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.lp-cal-month {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lp-cal-month-title {
+  text-align: center;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--text-normal);
+  padding: 2px 0;
+  background: var(--background-secondary);
+  border-radius: 4px;
+}
+
+.lp-cal-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.lp-cal-th {
+  text-align: center;
+  font-size: 10px;
+  color: var(--text-muted);
+  padding: 2px 0;
+  font-weight: 500;
+}
+
+.lp-cal-td {
+  text-align: center;
+  padding: 2px 0;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--text-normal);
+  position: relative;
+  height: 24px;
+  vertical-align: middle;
+}
+
+.lp-cal-td:hover {
+  background: var(--background-modifier-hover);
+}
+
+.lp-cal-day-num {
+  font-weight: 500;
+  display: block;
+}
+
+.lp-cal-dots {
+  display: flex;
+  justify-content: center;
+  gap: 1px;
+  margin-top: 1px;
+  height: 3px;
+}
+
+.lp-cal-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+}
+
+.lp-cal-dot-task { background: #5e81ac; }
+.lp-cal-dot-inspiration { background: #d08770; }
+.lp-cal-dot-habit { background: #a3be8c; }
+
+.lp-cal-day-out {
+  opacity: 0.3;
+}
+
+.lp-cal-day-today {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.lp-cal-day-selected {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: -2px;
+}
+
+/* ========== 周日历垂直列表 ========== */
+.lp-week-cal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lp-week-cal-row {
+  display: flex;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  cursor: pointer;
+  background: var(--background-primary);
+  transition: background 0.15s;
+}
+
+.lp-week-cal-row:hover {
+  background: var(--background-modifier-hover);
+}
+
+.lp-week-cal-row-today {
+  border-color: var(--interactive-accent);
+  border-width: 2px;
+}
+
+.lp-week-cal-row-selected {
+  background: var(--background-secondary-alt);
+}
+
+.lp-week-cal-date-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  padding: 2px 4px;
+  background: var(--background-secondary);
+  border-radius: 4px;
+}
+
+.lp-week-cal-weekday {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.lp-week-cal-date-num {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-normal);
+}
+
+.lp-week-cal-tasks-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.lp-week-cal-summary {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 2px;
+}
+
+.lp-week-cal-count {
+  font-size: 10px;
+  color: var(--text-muted);
+  background: var(--background-modifier-hover);
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+
+.lp-week-cal-task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lp-week-cal-task-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-normal);
+  padding: 1px 0;
+}
+
+.lp-week-cal-task-bar {
+  display: inline-block;
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.lp-week-cal-task-icon {
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.lp-week-cal-task-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 180px;
+}
+
+.lp-week-cal-task-done .lp-week-cal-task-text {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+.lp-week-cal-empty {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 4px 0;
+}
+
+.lp-week-cal-more {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ========== 周日历两栏布局 ========== */
+.lp-week-cal-content-col {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  min-width: 0;
+}
+
+.lp-week-cal-task-col,
+.lp-week-cal-habit-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 4px 6px;
+  border-radius: 4px;
+  background: var(--background-secondary);
+}
+
+.lp-week-cal-habit-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.lp-week-cal-habit-item {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  background: var(--background-modifier-border);
+  cursor: pointer;
+  font-size: 10px;
+  color: var(--text-normal);
+  transition: all 0.15s;
+}
+
+.lp-week-cal-habit-item:hover {
+  background: var(--interactive-hover);
+}
+
+.lp-week-cal-habit-done {
+  background: rgba(163, 190, 140, 0.3);
+  color: var(--text-normal);
+}
+
+.lp-week-cal-habit-icon {
+  font-size: 12px;
+}
+
+.lp-week-cal-habit-name {
+  font-size: 10px;
+}
+
+/* ========== 活力三环 ========== */
+.lp-cal-rings {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.lp-cal-rings svg {
+  display: block;
+}
+
+/* ========== 周日历任务项 ========== */
+.lp-week-cal-task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.lp-week-cal-add-btn {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+}
+
+.lp-week-cal-add-btn:hover {
+  opacity: 0.8;
+}
+
+.lp-week-cal-task-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-normal);
+  padding: 2px 0;
+}
+
+.lp-week-cal-task-bar {
+  display: inline-block;
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.lp-week-cal-task-checkbox {
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+.lp-week-cal-task-checkbox:hover {
+  color: var(--interactive-accent);
+}
+
+.lp-week-cal-task-time {
+  font-size: 10px;
+  color: var(--text-muted);
+  background: var(--background-modifier-hover);
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-family: var(--font-monospace);
+}
+
+.lp-week-cal-task-urgent,
+.lp-week-cal-task-important {
+  font-size: 11px;
+}
+
+.lp-week-cal-task-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 120px;
+}
+
+.lp-week-cal-task-done .lp-week-cal-task-text {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+.lp-week-cal-task-type {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: var(--background-modifier-hover);
+}
+
+.lp-week-cal-task-pomo {
+  font-size: 10px;
+  color: #d08770;
+  margin-left: 2px;
+}
+
+/* ========== 周日历打卡项（按类型分组，每组一行） ========== */
+.lp-week-cal-habit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.lp-week-cal-habit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* 每组一行：色条 + 组内习惯横向排列 */
+.lp-week-cal-habit-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.lp-week-cal-habit-bar {
+  display: inline-block;
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.lp-week-cal-habit-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* 单个习惯项：圆形复选框 + 图标 + 习惯名 */
+.lp-week-cal-habit-item {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--text-normal);
+}
+
+.lp-week-cal-habit-check {
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+.lp-week-cal-habit-check:hover {
+  color: var(--interactive-accent);
+}
+
+.lp-week-cal-habit-icon {
+  font-size: 12px;
+}
+
+.lp-week-cal-habit-name {
+  font-size: 11px;
+  cursor: pointer;
+}
+
+/* 已完成：文字删除线 + 半透明，复选框变绿 */
+.lp-week-cal-habit-done .lp-week-cal-habit-name {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+.lp-week-cal-habit-done .lp-week-cal-habit-check {
+  color: #a3be8c;
+}
+
+/* ========== 任务表单 ========== */
+.lp-task-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+
+.lp-task-form label {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.lp-task-form-flags {
+  display: flex;
+  gap: 16px;
+  padding: 4px 0;
+}
+
+.lp-task-form-flag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-normal);
+  cursor: pointer;
+}
+
+.lp-task-form-btns {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.lp-modal-cancel-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--interactive-normal);
+  color: var(--text-normal);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.lp-modal-cancel-btn:hover {
+  background: var(--interactive-hover);
+}
+
+/* ========== 打卡切换按钮 ========== */
+.lp-habit-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 16px;
+  border: 2px solid;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  user-select: none;
+  line-height: 1.4;
+}
+
+.lp-habit-toggle:hover {
+  transform: scale(1.05);
+  filter: brightness(1.1);
+}
+
+.lp-habit-toggle:active {
+  transform: scale(0.95);
+}
+
+/* 未打卡状态：透明背景，彩色边框和文字 */
+.lp-habit-toggle-unchecked {
+  background: transparent;
+  opacity: 0.7;
+}
+
+.lp-habit-toggle-unchecked:hover {
+  opacity: 1;
+  background: var(--background-modifier-hover);
+}
+
+/* 已打卡状态：彩色填充背景，白色文字 */
+.lp-habit-toggle-checked {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.lp-habit-toggle-icon {
+  font-size: 14px;
+}
+
+.lp-habit-toggle-name {
+  font-size: 11px;
+}
+
+.lp-habit-toggle-status {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* ========== 任务表单弹窗 ========== */
+.lp-task-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+}
+
+.lp-task-form label {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.lp-task-form input[type="text"],
+.lp-task-form input[type="time"],
+.lp-task-form input[type="date"],
+.lp-task-form select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 13px;
+}
+
+/* 紧急/重要复选框 - 固定小尺寸，垂直居中对齐 */
+.lp-task-form-flag input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  vertical-align: middle;
+  flex-shrink: 0;
+  accent-color: var(--interactive-accent);
+}
+
+.lp-task-form-flags {
+  display: flex;
+  gap: 16px;
+  padding: 4px 0;
+}
+
+.lp-task-form-flag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-normal);
+  cursor: pointer;
+  user-select: none;
+}
+
+.lp-task-form-btns {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.lp-modal-cancel-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--interactive-normal);
+  color: var(--text-normal);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.lp-modal-cancel-btn:hover {
+  background: var(--interactive-hover);
+}
+
+.lp-modal-save-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.lp-modal-save-btn:hover {
+  background: var(--interactive-accent-hover);
+}
+
+/* ========== 设置面板辅助 ========== */
+.lp-setting-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 4px 0 8px 0;
+}
+
+.lp-templates-container {
+  margin-bottom: 8px;
+}
+
+/* ========== 编辑当天任务弹窗 ========== */
+.lp-task-edit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+  min-width: 400px;
+}
+
+.lp-task-edit-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-primary);
+}
+
+.lp-task-edit-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  flex-shrink: 0;
+  accent-color: var(--interactive-accent);
+}
+
+.lp-task-edit-desc {
+  flex: 1;
+  padding: 4px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 13px;
+}
+
+.lp-task-edit-del {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 2px 4px;
+}
+
+.lp-task-edit-add-row {
+  display: flex;
+  gap: 8px;
+  padding: 6px 0;
+  border-top: 1px solid var(--background-modifier-border);
+  margin-top: 4px;
+}
+
+.lp-task-edit-new-input {
+  flex: 1;
+  padding: 4px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 13px;
+}
+
+.lp-task-edit-add-btn {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--interactive-accent);
+  border-radius: 4px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+}
+
+.lp-task-edit-add-btn:hover {
+  opacity: 0.85;
+}
+

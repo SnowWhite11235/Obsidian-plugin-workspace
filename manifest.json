@@ -1,0 +1,10 @@
+{
+  "id": "obsidian-life-panel",
+  "name": "生活管理面板",
+  "version": "1.0.0",
+  "minAppVersion": "1.4.0",
+  "description": "月日历、任务、打卡、灵感、复盘、番茄钟、统计 一站式生活管理面板",
+  "author": "xbai",
+  "authorUrl": "",
+  "isDesktopOnly": false
+}
