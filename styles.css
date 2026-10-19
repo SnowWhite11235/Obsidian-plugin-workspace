@@ -1149,9 +1149,7 @@
 .lp-week-cal-task-text {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  word-break: break-word;
 }
 
 .lp-week-cal-task-done .lp-week-cal-task-text {
@@ -1403,9 +1401,7 @@
 .lp-week-cal-task-text {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  word-break: break-word;
 }
 
 .lp-week-cal-task-done .lp-week-cal-task-text {
@@ -1567,9 +1563,7 @@
 .lp-week-cal-task-text {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  word-break: break-word;
 }
 
 .lp-week-cal-task-done .lp-week-cal-task-text {

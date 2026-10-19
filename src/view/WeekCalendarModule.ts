@@ -168,7 +168,7 @@ export class WeekCalendarModule extends BaseModule {
       return;
     }
 
-    // 任务列表（最多显示 5 个）
+    // 任务列表（展示全部任务）
     const taskList = container.createDiv({ cls: "lp-week-cal-task-list" });
     const sortedTasks = [...tasks].sort((a, b) => {
       if (a.checked !== b.checked) return a.checked ? 1 : -1;
@@ -181,15 +181,8 @@ export class WeekCalendarModule extends BaseModule {
       if (a.time && b.time) return a.time.localeCompare(b.time);
       return 0;
     });
-    const showTasks = sortedTasks.slice(0, 5);
-    for (const task of showTasks) {
+    for (const task of sortedTasks) {
       this.renderTaskItem(taskList, task, dateStr, sourceDateMap);
-    }
-    if (tasks.length > 5) {
-      taskList.createDiv({
-        cls: "lp-week-cal-more",
-        text: `+${tasks.length - 5} 更多`,
-      });
     }
 
     // 点击任务列表空白处打开当天任务编辑器
