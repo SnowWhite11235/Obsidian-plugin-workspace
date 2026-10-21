@@ -240,6 +240,30 @@ focusMinutes: 0
     return results;
   }
 
+  /** 按任务的显示日期查询，不受任务所在日记日期的限制，也不创建日记。 */
+  async getTasksForDisplayRange(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<Array<{ task: ParsedTask; sourceDate: string }>> {
+    const start = toISODate(startDate);
+    const end = toISODate(endDate);
+    const prefix = normalizePath(`${this.settings.folder}/daily`) + "/";
+    const files = this.app.vault.getMarkdownFiles()
+      .filter((file) => file.path.startsWith(prefix) && /^\d{4}-\d{2}-\d{2}\.md$/.test(file.path.slice(prefix.length)))
+      .sort((a, b) => a.path.localeCompare(b.path));
+    const results: Array<{ task: ParsedTask; sourceDate: string }> = [];
+    for (const file of files) {
+      const sourceDate = file.basename;
+      const content = await this.app.vault.read(file);
+      const tasks = parseTasksFromText(this.extractSection(content, SECTION_TASKS) || "");
+      for (const task of tasks) {
+        const displayDate = task.dueDate || sourceDate;
+        if (displayDate >= start && displayDate <= end) results.push({ task, sourceDate });
+      }
+    }
+    return results;
+  }
+
   /** 添加任务到某日的任务区 */
   async addTask(
     date: Date | string,
@@ -309,21 +333,28 @@ focusMinutes: 0
     date: Date | string,
     lineIndex: number,
     updates: Partial<ParsedTask>,
+    expectedRaw?: string,
   ): Promise<void> {
     const d = typeof date === "string" ? fromISODate(date) : date;
-    const { file, content } = await this.getDailyNote(d);
-    const sectionStart = this.findSectionStart(content, SECTION_TASKS);
-    if (sectionStart < 0) return;
-    const allLines = content.split("\n");
-    const absoluteLine = sectionStart + 1 + lineIndex;
-    if (absoluteLine < 0 || absoluteLine >= allLines.length) return;
-
     const { parseTaskLine, serializeTask } = await import("./TaskParser");
-    const t = parseTaskLine(allLines[absoluteLine], absoluteLine);
-    if (!t) return;
-    const updated: ParsedTask = { ...t, ...updates };
-    allLines[absoluteLine] = serializeTask(updated);
-    await this.app.vault.modify(file, allLines.join("\n"));
+    const file = this.app.vault.getAbstractFileByPath(this.getDailyNotePath(d));
+    if (!(file instanceof TFile)) throw new Error("任务所在日记已不存在，请刷新后重试");
+    await this.app.vault.process(file, (content) => {
+      const sectionStart = this.findSectionStart(content, SECTION_TASKS);
+      const sectionEnd = this.findNextSectionStart(content, sectionStart);
+      const allLines = content.split("\n");
+      const absoluteLine = sectionStart + 1 + lineIndex;
+      if (sectionStart < 0 || lineIndex < 0 || absoluteLine >= allLines.length ||
+          (sectionEnd >= 0 && absoluteLine >= sectionEnd)) {
+        throw new Error("任务位置已变化，请刷新后重试");
+      }
+      const t = parseTaskLine(allLines[absoluteLine], lineIndex);
+      if (!t || (expectedRaw !== undefined && t.raw !== expectedRaw)) {
+        throw new Error("任务内容已变化，请刷新后重试");
+      }
+      allLines[absoluteLine] = serializeTask({ ...t, ...updates });
+      return allLines.join("\n");
+    });
   }
 
   /** 删除任务（按 lineIndex） */

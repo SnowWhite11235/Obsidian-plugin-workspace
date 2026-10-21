@@ -25,10 +25,15 @@ import {
 } from "../core/DateUtils";
 import { ParsedTask, Priority, TaskType, HABIT_TYPE_COLORS, HabitConfig } from "../core/types";
 
+const TASK_DRAG_TYPE = "application/x-life-panel-week-task";
+
 export class WeekCalendarModule extends BaseModule {
   private weekStartDate: Date;
   private selectedDate: string;
   private showTodayOnly = false;
+  private renderVersion = 0;
+  private draggedTask: { task: ParsedTask; sourceDate: string; displayDate: string } | null = null;
+  private savingTask = false;
 
   constructor(app: App, plugin: LifePanelPlugin, container: HTMLElement, currentDate: string) {
     super(app, plugin, container, currentDate);
@@ -37,7 +42,7 @@ export class WeekCalendarModule extends BaseModule {
   }
 
   async render() {
-    console.log("[WeekCal] render() START");
+    const version = ++this.renderVersion;
     const c = this.container;
     c.empty();
     c.addClass("lp-week-cal");
@@ -77,16 +82,10 @@ export class WeekCalendarModule extends BaseModule {
     const list = c.createDiv({ cls: "lp-week-cal-list" });
     const todayStr = today();
 
-    // 扫描范围：周开始前 30 天到周末，确保能找到提前创建但截止日在本周的任务
-    const scanStart = addDays(this.weekStartDate, -30);
-    const scanEnd = addDays(this.weekStartDate, 6);
-    const allTasks = await this.plugin.store.getTasksInRange(scanStart, scanEnd);
-    console.log("[WeekCal] scanRange", toISODate(scanStart), "~", toISODate(scanEnd));
-    console.log("[WeekCal] allTasks", allTasks.map((t) => ({
-      desc: t.task.description,
-      due: t.task.dueDate,
-      src: t.sourceDate,
-    })));
+    const allTasks = await this.plugin.store.getTasksForDisplayRange(
+      this.weekStartDate, addDays(this.weekStartDate, 6),
+    );
+    if (version !== this.renderVersion) return;
 
     // 按显示日期分组：有 dueDate 的按 dueDate，否则按 sourceDate
     const tasksByDate = new Map<string, ParsedTask[]>();
@@ -97,7 +96,6 @@ export class WeekCalendarModule extends BaseModule {
       tasksByDate.get(displayDate)!.push(item.task);
       sourceDateMap.set(item.task, item.sourceDate);
     }
-    console.log("[WeekCal] tasksByDate", Array.from(tasksByDate.entries()).map(([k, v]) => [k, v.length]));
 
     for (let i = 0; i < 7; i++) {
       const day = addDays(this.weekStartDate, i);
@@ -111,6 +109,8 @@ export class WeekCalendarModule extends BaseModule {
       const row = list.createDiv({
         cls: `lp-week-cal-row ${isToday ? "lp-week-cal-row-today" : ""} ${isSelected ? "lp-week-cal-row-selected" : ""}`,
       });
+      row.dataset.date = iso;
+      this.setupTaskDropTarget(row, iso);
 
       const dateCol = row.createDiv({ cls: "lp-week-cal-date-col" });
       dateCol.createEl("div", {
@@ -135,7 +135,48 @@ export class WeekCalendarModule extends BaseModule {
 
       const habitCol = contentCol.createDiv({ cls: "lp-week-cal-habit-col" });
       await this.renderDayHabits(habitCol, iso);
+      if (version !== this.renderVersion) return;
     }
+  }
+
+  /** 日期整行都是落点，包括还没有任务的日期。 */
+  private setupTaskDropTarget(row: HTMLElement, dateStr: string) {
+    const isTaskDrag = (e: DragEvent) => e.dataTransfer?.types.includes(TASK_DRAG_TYPE);
+    row.addEventListener("dragover", (e) => {
+      if (!isTaskDrag(e)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const canMove = !this.savingTask && this.draggedTask?.displayDate !== dateStr && !!this.draggedTask;
+      e.dataTransfer!.dropEffect = canMove ? "move" : "none";
+      row.classList.toggle("lp-week-cal-drop-target", canMove);
+    });
+    row.addEventListener("dragleave", (e) => {
+      if (!isTaskDrag(e)) return;
+      e.stopPropagation();
+      if (!(e.relatedTarget instanceof Node) || !row.contains(e.relatedTarget)) {
+        row.removeClass("lp-week-cal-drop-target");
+      }
+    });
+    row.addEventListener("drop", async (e) => {
+      if (!isTaskDrag(e)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      row.removeClass("lp-week-cal-drop-target");
+      const dragged = this.draggedTask;
+      this.draggedTask = null;
+      if (!dragged || dragged.displayDate === dateStr || this.savingTask) return;
+      this.savingTask = true;
+      try {
+        await this.plugin.store.updateTask(dragged.sourceDate, dragged.task.lineIndex,
+          { dueDate: dateStr }, dragged.task.raw);
+        bus.emit({ type: "data-updated", scope: "day", date: dragged.sourceDate });
+      } catch (error) {
+        new Notice(`移动任务失败：${(error as Error).message}`);
+      } finally {
+        this.savingTask = false;
+        await this.render();
+      }
+    });
   }
 
   /** 渲染某天的任务列表 */
@@ -205,6 +246,27 @@ export class WeekCalendarModule extends BaseModule {
     const color = task.taskType ? this.getTaskColor(task.taskType) : "#8f9192";
     const item = container.createDiv({
       cls: `lp-week-cal-task-item ${task.checked ? "lp-week-cal-task-done" : ""}`,
+    });
+    item.draggable = true;
+    item.title = "拖动到其他日期以修改截止日";
+    item.addEventListener("dragstart", (e) => {
+      e.stopPropagation();
+      if (!e.dataTransfer || this.savingTask) {
+        e.preventDefault();
+        return;
+      }
+      this.draggedTask = { task, sourceDate: sourceDateMap.get(task) || dateStr, displayDate: dateStr };
+      e.dataTransfer.setData(TASK_DRAG_TYPE, "task");
+      e.dataTransfer.effectAllowed = "move";
+      item.addClass("lp-week-cal-task-dragging");
+    });
+    item.addEventListener("dragend", (e) => {
+      e.stopPropagation();
+      this.draggedTask = null;
+      item.removeClass("lp-week-cal-task-dragging");
+      this.container.querySelectorAll(".lp-week-cal-drop-target").forEach((row) => {
+        row.removeClass("lp-week-cal-drop-target");
+      });
     });
     // 左侧色条
     item.createEl("span", {
@@ -755,20 +817,28 @@ export class WeekCalendarModule extends BaseModule {
         tags.push(typeTag);
       }
 
-      await this.plugin.store.updateTask(src, task.lineIndex, {
-        description: desc,
-        priority: prioritySelect.value as Priority,
-        tags,
-        time: timeInput.value || null,
-        urgent: urgentCheck.checked,
-        important: importantCheck.checked,
-        taskType: typeSelect.value as TaskType,
-        dueDate: dueInput.value || null,
-      });
-      new Notice("任务已更新");
-      modal.close();
-      this.render();
-      bus.emit({ type: "data-updated", scope: "day", date: src });
+      if (saveBtn.disabled) return;
+      saveBtn.disabled = true;
+      try {
+        await this.plugin.store.updateTask(src, task.lineIndex, {
+          description: desc,
+          priority: prioritySelect.value as Priority,
+          tags,
+          time: timeInput.value || null,
+          urgent: urgentCheck.checked,
+          important: importantCheck.checked,
+          taskType: typeSelect.value as TaskType,
+          dueDate: dueInput.value || null,
+        }, task.raw);
+        new Notice("任务已更新");
+        modal.close();
+        await this.render();
+        bus.emit({ type: "data-updated", scope: "day", date: src });
+      } catch (error) {
+        new Notice(`更新任务失败：${(error as Error).message}`);
+      } finally {
+        saveBtn.disabled = false;
+      }
     };
 
     saveBtn.addEventListener("click", save);

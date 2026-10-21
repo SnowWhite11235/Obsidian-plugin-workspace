@@ -18,6 +18,7 @@ import { today } from "./core/DateUtils";
 
 export const PANEL_VIEW_TYPE = "life-panel-view";
 export const PANEL_FULLSCREEN_VIEW_TYPE = "life-panel-fullscreen";
+const MODULE_DRAG_TYPE = "application/x-life-panel-module";
 
 /** 模块元数据定义 */
 interface ModuleMeta {
@@ -44,6 +45,9 @@ export class PanelView extends ItemView {
   private currentDate: string = today();
   /** 当前渲染顺序的模块 id 列表 */
   private order: string[] = [];
+  private weekCalendar?: WeekCalendarModule;
+  private stopListening?: () => void;
+  private taskRefreshTimer?: ReturnType<typeof setTimeout>;
 
   constructor(
     leaf: WorkspaceLeaf,
@@ -66,15 +70,35 @@ export class PanelView extends ItemView {
 
   async onOpen() {
     this.render();
-    bus.on((e) => {
+    this.stopListening = bus.on((e) => {
       if (e.type === "date-changed") {
         this.currentDate = e.date;
         this.refreshDayDependentModules();
+      } else if (e.type === "data-updated") {
+        this.scheduleTaskRefresh();
       }
     });
+    // 同步在 Markdown 编辑器中直接修改截止日的情况。
+    this.registerEvent(this.app.vault.on("modify", (file) => {
+      if (file.path.startsWith(`${this.plugin.settings.folder}/daily/`)) {
+        this.scheduleTaskRefresh();
+      }
+    }));
   }
 
-  async onClose() {}
+  async onClose() {
+    this.stopListening?.();
+    clearTimeout(this.taskRefreshTimer);
+    this.weekCalendar = undefined;
+  }
+
+  private scheduleTaskRefresh() {
+    clearTimeout(this.taskRefreshTimer);
+    this.taskRefreshTimer = setTimeout(() => {
+      // 复用模块实例，保留正在查看的周和“显示今天”状态。
+      void this.weekCalendar?.render();
+    }, 100);
+  }
 
   /** 获取当前模块顺序：优先用 settings.moduleOrder，否则用默认 */
   private getModuleOrder(): string[] {
@@ -178,7 +202,8 @@ export class PanelView extends ItemView {
         new CalendarModule(this.app, this.plugin, body, this.currentDate).render();
         break;
       case "week-calendar":
-        new WeekCalendarModule(this.app, this.plugin, body, this.currentDate).render();
+        this.weekCalendar = new WeekCalendarModule(this.app, this.plugin, body, this.currentDate);
+        this.weekCalendar.render();
         break;
       case "inspiration":
         new InspirationModule(this.app, this.plugin, body, this.currentDate).render();
@@ -208,11 +233,12 @@ export class PanelView extends ItemView {
     headerEl.addEventListener("dragstart", (e) => {
       dragSrcId = section.dataset.moduleId || null;
       section.addClass("life-panel-section-dragging");
-      e.dataTransfer?.setData("text/plain", dragSrcId || "");
+      e.dataTransfer?.setData(MODULE_DRAG_TYPE, dragSrcId || "");
       e.dataTransfer!.effectAllowed = "move";
     });
 
     headerEl.addEventListener("dragend", () => {
+      dragSrcId = null;
       section.removeClass("life-panel-section-dragging");
       // 清理所有 drag-over 样式
       this.contentEl.querySelectorAll(".life-panel-section-drag-over").forEach((el) => {
@@ -221,6 +247,7 @@ export class PanelView extends ItemView {
     });
 
     section.addEventListener("dragover", (e) => {
+      if (!e.dataTransfer?.types.includes(MODULE_DRAG_TYPE)) return;
       e.preventDefault();
       e.dataTransfer!.dropEffect = "move";
       if (section.dataset.moduleId !== dragSrcId) {
@@ -233,9 +260,10 @@ export class PanelView extends ItemView {
     });
 
     section.addEventListener("drop", (e) => {
+      if (!e.dataTransfer?.types.includes(MODULE_DRAG_TYPE)) return;
       e.preventDefault();
       section.removeClass("life-panel-section-drag-over");
-      const srcId = e.dataTransfer?.getData("text/plain") || dragSrcId;
+      const srcId = e.dataTransfer.getData(MODULE_DRAG_TYPE);
       const dstId = section.dataset.moduleId;
       if (!srcId || !dstId || srcId === dstId) return;
 
